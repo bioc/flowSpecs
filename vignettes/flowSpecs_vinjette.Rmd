@@ -3,8 +3,7 @@ title: Example workflow for processing of raw spectral cytometry files
 author: 
 - name: Jakob Theorell
   affiliation: 
-  - Oxford Autoimmune Neurology Group, Nuffield Department of Clinical Neurosciences, University of Oxford, Oxford, United Kingdom
-  - Department of Clinical Neurosciences, Karolinska Institutet, Stockholm, Sweden
+  - Department of Medicine Huddinge, Karolinska Institutet, Stockholm, Sweden
 date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{Example workflow for processing of raw spectral cytometry files}

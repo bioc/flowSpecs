@@ -24,6 +24,6 @@ this software!
 \code{\link[flowCore:flowCore-package]{flowCore}}
 }
 \author{
-Maintainer: Jakob Theorell <jakob.theorell@ndcn.ox.ac.uk>
+Maintainer: Jakob Theorell <jakob.theorell@ki.se>
 }
 \keyword{package}

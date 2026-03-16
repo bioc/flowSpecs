@@ -16,6 +16,11 @@
 #' "Bead" or "PBMC", then the vector should be c("Bead", "PBMC"). The system
 #' is not case specific.
 #' @param autoFluoName The sample name of the autofluorescence control.
+#' @param scatterGating Should an internal gate be created based on the highest
+#' peak in forward- and side scatter? Defaults to TRUE for backward 
+#' compatibility.
+#' @param excludedColumnNamePatterns Here, the columns that do not have spectral
+#' information are identified and excluded. 
 #' @return A data frame with each row representing a fluorochrome or
 #' or autofluorescence and each column representing a detector.
 #' @importFrom BiocGenerics colnames ncol
@@ -35,12 +40,14 @@
 #' specMat <- specMatCalc(unmixCtrls, groupNames = c("Beads_", "Dead_"),
 #' autoFluoName = "PBMC_unstained.fcs")
 #' @export specMatCalc
-specMatCalc <- function(unmixCtrls, groupNames, autoFluoName) {
-
+specMatCalc <- function(unmixCtrls, groupNames, autoFluoName,
+                        scatterGating = TRUE,
+                        excludedColumnNamePatterns = 
+                            "Time|SC|Sort|ate|omp|LightLoss|Row|Column") {
 
     # The spectrum for each file is calculated
 
-    specCalcMat <- fsApply(unmixCtrls, specCalc)
+    specCalcMat <- fsApply(unmixCtrls, specCalc, scatterGating = scatterGating)
 
     # Now, the samples are categorized into groups depending on their sample
     # type reflected in the names of the samples. If any samples are singlets,
@@ -64,15 +71,12 @@ specMatCalc <- function(unmixCtrls, groupNames, autoFluoName) {
            one color. ")
        }
 
-
     # Now, in each matrix in the list, the row with the lowest sum
     # is identified as the unstained
     negCtrlRows <- lapply(
         singleStainGroupsList,
         function(x) which.min(rowSums(x))
     )
-
-    # If the autoFluoName is not in the
 
     # Here, the subtractions are made
     rawSpecMatList <- lapply(seq_along(negCtrlRows), function(x) {
@@ -114,31 +118,37 @@ specMatCalc <- function(unmixCtrls, groupNames, autoFluoName) {
     return(specMatFrac)
 }
 
-specCalc <- function(flowFrame) {
+specCalc <- function(flowFrame, scatterGating) {
     focusColNames <- BiocGenerics::colnames(flowFrame)
 
-    # First, a gate is applied to FSC.A, to simplify work with cells
-    fscVar <- which(grepl("FSC", focusColNames) &
-        grepl("A", focusColNames))[1]
-
-    fscGateVals <- madFilter(flowFrame, gateVar = fscVar, nMads = 1.5,
-                               returnGateVals = TRUE)[[1]]
-    fscVarDat <- exprs(flowFrame)[,fscVar]
-    fscFilteredFrame <- flowFrame[which(fscVarDat > fscGateVals[1] &
-                                            fscVarDat < fscGateVals[2]),]
-
-    # Now, a similar gate is applied to ssc, to clean up all files.
-    sscVar <- which(grepl("SSC", focusColNames) &
-                        grepl("A", focusColNames))[1]
+    if(scatterGating){
+        # First, a gate is applied to FSC.A, to simplify work with cells
+        fscVar <- which(grepl("FSC", focusColNames) &
+                            grepl("A", focusColNames))[1]
+        
+        fscGateVals <- madFilter(flowFrame, gateVar = fscVar, nMads = 1.5,
+                                 returnGateVals = TRUE)[[1]]
+        fscVarDat <- exprs(flowFrame)[,fscVar]
+        fscFilteredFrame <- flowFrame[which(fscVarDat > fscGateVals[1] &
+                                                fscVarDat < fscGateVals[2]),]
+        
+        # Now, a similar gate is applied to ssc, to clean up all files.
+        sscVar <- which(grepl("SSC", focusColNames) &
+                            grepl("A", focusColNames))[1]
+        
+        sscGateVals <- madFilter(fscFilteredFrame, 
+                                 gateVar = sscVar, nMads = 1.5,
+                                 returnGateVals = TRUE)[[1]]
+        sscVarDat <- exprs(fscFilteredFrame)[,sscVar]
+        sscFilteredFrame <- 
+            fscFilteredFrame[which(sscVarDat > sscGateVals[1] &
+                                       sscVarDat < sscGateVals[2]),] 
+        flowFrame <- sscFilteredFrame
+    }
     
-    sscGateVals <- madFilter(fscFilteredFrame, gateVar = sscVar, nMads = 1.5,
-                             returnGateVals = TRUE)[[1]]
-    sscVarDat <- exprs(fscFilteredFrame)[,sscVar]
-    sscFilteredFrame <- fscFilteredFrame[which(sscVarDat > sscGateVals[1] &
-                                            sscVarDat < sscGateVals[2]),]
 
     # Here, all non-fluorescent channels are excluded
-    fluoFrame <- sscFilteredFrame[, -grep("ime|SC|ort|ate|omp", focusColNames)]
+    fluoFrame <- flowFrame[, -grep("ime|SC|ort|ate|omp", focusColNames)]
     
     #Now, if two peaks are present in any channels, then the top peak will
     #be selected. 

@@ -4,7 +4,13 @@
 \alias{specMatCalc}
 \title{Calculating the matrix used for spectral unmixing}
 \usage{
-specMatCalc(unmixCtrls, groupNames, autoFluoName)
+specMatCalc(
+  unmixCtrls,
+  groupNames,
+  autoFluoName,
+  scatterGating = TRUE,
+  excludedColumnNamePatterns = "Time|SC|Sort|ate|omp|LightLoss|Row|Column"
+)
 }
 \arguments{
 \item{unmixCtrls}{A flowSet containing all the single stained and
@@ -21,6 +27,13 @@ is stained PBMC, and the files congruently either have a prefix containing
 is not case specific.}
 
 \item{autoFluoName}{The sample name of the autofluorescence control.}
+
+\item{scatterGating}{Should an internal gate be created based on the highest
+peak in forward- and side scatter? Defaults to TRUE for backward 
+compatibility.}
+
+\item{excludedColumnNamePatterns}{Here, the columns that do not have spectral
+information are identified and excluded.}
 }
 \value{
 A data frame with each row representing a fluorochrome or

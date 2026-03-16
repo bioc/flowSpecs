@@ -1,3 +1,8 @@
+Changes in version 1.25.1 (2026-03-16)
++Updates for S8 data, but with more general applicability: 
++specMatCalc now allows for a custom set of exclusion parameters
++specMatCalc now allows for exclusion of the scatter gating step
+
 Changes in version 1.13.1 (2023-04-05)
 +Updates to specMatCalc to work with BigFoot data. 
 

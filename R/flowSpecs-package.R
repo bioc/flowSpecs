@@ -16,10 +16,11 @@
 #'
 #' @name flowSpecs-package
 #' @aliases flowSpecs-package flowSpecs
-#' @docType package
 #' @author
-#' Maintainer: Jakob Theorell <jakob.theorell@@ndcn.ox.ac.uk>
+#' Maintainer: Jakob Theorell <jakob.theorell@@ki.se>
 #' @seealso \code{\link[flowCore:flowCore-package]{flowCore}}
 #' @keywords package
 #' @importFrom stats density lsfit mad median quantile
+"_PACKAGE"
+# > [1] '_PACKAGE'
 NULL
