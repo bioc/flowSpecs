@@ -47,7 +47,9 @@ specMatCalc <- function(unmixCtrls, groupNames, autoFluoName,
 
     # The spectrum for each file is calculated
 
-    specCalcMat <- fsApply(unmixCtrls, specCalc, scatterGating = scatterGating)
+    specCalcMat <- fsApply(unmixCtrls, specCalc, scatterGating = scatterGating,
+                           excludedColumnNamePatterns = 
+                               excludedColumnNamePatterns)
 
     # Now, the samples are categorized into groups depending on their sample
     # type reflected in the names of the samples. If any samples are singlets,
@@ -118,7 +120,7 @@ specMatCalc <- function(unmixCtrls, groupNames, autoFluoName,
     return(specMatFrac)
 }
 
-specCalc <- function(flowFrame, scatterGating) {
+specCalc <- function(flowFrame, scatterGating, excludedColumnNamePatterns) {
     focusColNames <- BiocGenerics::colnames(flowFrame)
 
     if(scatterGating){
@@ -148,7 +150,7 @@ specCalc <- function(flowFrame, scatterGating) {
     
 
     # Here, all non-fluorescent channels are excluded
-    fluoFrame <- flowFrame[, -grep("ime|SC|ort|ate|omp", focusColNames)]
+    fluoFrame <- flowFrame[, -grep(excludedColumnNamePatterns, focusColNames)]
     
     #Now, if two peaks are present in any channels, then the top peak will
     #be selected. 
